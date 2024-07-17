@@ -43,10 +43,9 @@ async function run() {
 
       //unique user
       const query = { phone_number: phone_number };
-      const existing_user = usersCollection.findOne(query);
+      const existing_user = await usersCollection.findOne(query);
       if (existing_user) {
-        res.send({ message: "Already existed" });
-        return;
+        return res.send({ message: "Already existed" });
       }
 
       //   has password
@@ -63,6 +62,26 @@ async function run() {
       };
       const result = await usersCollection.insertOne(new_user);
       res.send(result);
+    });
+
+    //login
+    app.post("/login", async (req, res) => {
+      const user = req.body;
+      // console.log(user)
+      // identify user
+      const query = { phone_number: user.phone_number};
+      const result = await usersCollection.findOne(query);
+      console.log(result);
+      // password bcrypt
+      const plain_pass=user.password;
+      const isVerified= await bcrypt.compare(plain_pass,result.password)
+      console.log(isVerified);
+      if(isVerified){
+       return res.send({message:'login successfully'})
+      }
+      else{
+        return res.send({message:'invalid password'})
+      }
     });
 
     // Send a ping to confirm a successful connection
